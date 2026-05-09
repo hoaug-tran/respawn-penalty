@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "hoaug_death_penalty",
+  "version": "${version}",
+  "name": "Respawn Penalty",
+  "description": "Server-side Fabric respawn penalty system with persistent death streaks, hunger control, max-health penalties, and anti-respawn-abuse behavior.",
+  "authors": [
+    "Hoaug"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "com.hoaug.deathpenalty.HoaugDeathPenalty"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "1.21.8",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
