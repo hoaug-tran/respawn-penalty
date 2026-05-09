@@ -1,8 +1,43 @@
 # Respawn Penalty
 
-Server-side Fabric 1.21.8 mod that discourages repeated deaths without relying on datapacks or thirst APIs.
+Server-side Fabric mod for Minecraft 1.21.8 that discourages repeated deaths without relying on datapacks or external thirst APIs.
 
-## Behavior
+---
+
+## Features
+
+- Persistent death streak tracking
+- Automatic death penalties after respawn
+- Sleep recovery locking against abuse
+- Passive survival-based recovery
+- Multiplayer-safe UUID-based persistence
+- Server restart persistence using `PersistentState`
+- No Tough As Nails or thirst API dependency
+- Dedicated-server friendly design
+
+---
+
+## Requirements
+
+- Minecraft `1.21.8`
+- Fabric Loader `>= 0.16.14`
+- Fabric API
+- Java `21`
+
+---
+
+## Environment
+
+This is a **server-side only** mod.
+
+Clients do not need to install the mod when joining a dedicated server.
+
+> [!IMPORTANT]
+> This mod intentionally avoids external thirst/survival APIs to reduce compatibility and crash risks on Minecraft 1.21.8.
+
+---
+
+## Penalty System
 
 When a non-creative, non-spectator player dies and respawns:
 
@@ -14,57 +49,100 @@ When a non-creative, non-spectator player dies and respawns:
 | 4-5 | 10 | 6 | Weakness II 75s, Slowness 25s, Mining Fatigue 30s, Darkness 6s | 5 minutes |
 | 6+ | 10 | 6 | Weakness II 90s, Slowness II 30s, Mining Fatigue 40s, Darkness 8s | 10 minutes |
 
-Death streak increases only when deaths happen within 10 minutes. Penalties cap at 10 max health and 6 food to avoid permanent death spirals.
+Death streak increases only when deaths happen within 10 minutes.
+
+Penalties cap at 10 max health and 6 food to avoid permanent death spirals.
+
+---
 
 ## Recovery
 
-Player recovers when either condition happens:
+A player recovers when either condition happens:
 
-- Sleeps successfully while sleep recovery is not locked.
-- Survives 20 minutes while online.
+- Successfully sleeps while sleep recovery is not locked
+- Survives online for 20 minutes
 
-Repeated intentional deaths lock sleep recovery:
+Repeated intentional deaths temporarily lock sleep recovery:
 
-- Streak 4-5: sleep recovery locked for 5 minutes.
-- Streak 6+: sleep recovery locked for 10 minutes.
+| Streak | Lock duration |
+|---|---|
+| 4-5 | 5 minutes |
+| 6+ | 10 minutes |
 
-Survival recovery still works during lock. This prevents `die -> sleep -> reset -> die` abuse without trapping players forever.
+Survival recovery still works during the lock period.
 
-Recovery restores the max-health base value captured before the active penalty started and clears penalty effects.
+This prevents:
+
+```text
+die -> sleep -> reset -> die
+````
+
+abuse loops without permanently trapping players.
+
+Recovery restores:
+
+* Original max-health base value
+* Normal recovery state
+* Cleared penalty effects
+
+---
 
 ## Anti-Exploit Guarantees
 
-- Respawn cannot refill player to full normal health/food.
-- Logout/relog keeps active penalty.
-- Server restart keeps active penalty, death streak, and recovery lock through world `PersistentState`.
-- Multiplayer state is keyed by UUID, so players do not affect each other.
-- Creative and spectator players are ignored for admin/testing safety.
-- Tough As Nails/thirst is intentionally not used to avoid optional API crash risk on 1.21.8.
+* Respawn cannot fully restore normal health/food
+* Logout/relog keeps active penalty state
+* Server restart preserves:
 
-## Compatibility Note
+  * death streak
+  * active penalties
+  * recovery lock
+* Multiplayer state is isolated per UUID
+* Creative and spectator players are ignored
+* Penalty persistence survives crashes and restarts through world `PersistentState`
 
-The public mod name and jar basename are now `Respawn Penalty`. Internal mod id remains `hoaug_death_penalty` for save compatibility with existing worlds.
+> [!NOTE]
+> Death streak only increases if deaths happen within the configured streak window.
+
+---
+
+## Download
+
+Download the latest release from the GitHub Releases page.
+
+---
 
 ## Build
 
+Windows PowerShell:
+
 ```powershell
-gradle clean build
+.\gradlew clean build
 ```
 
-Jar output:
+Linux/macOS:
+
+```bash
+./gradlew clean build
+```
+
+Generated jar:
 
 ```text
-build/libs/respawn-penalty-1.0.0.jar
+build/libs/respawn-penalty-<version>.jar
 ```
+
+---
 
 ## Install
 
-1. Install Fabric Loader for Minecraft 1.21.8.
-2. Install Fabric API.
-3. Copy `respawn-penalty-1.0.0.jar` into server `mods/`.
-4. Restart server.
+1. Install Fabric Loader for Minecraft `1.21.8`
+2. Install Fabric API
+3. Copy the generated `.jar` file into the server `mods/` directory
+4. Restart the server
 
-## Tuning
+---
+
+## Configuration
 
 Edit constants in:
 
@@ -74,9 +152,27 @@ src/main/java/com/hoaug/deathpenalty/DeathPenaltyConfig.java
 
 Important constants:
 
-- `STREAK_WINDOW_TICKS`
-- `RECOVERY_TICKS`
-- `MODERATE_RECOVERY_LOCK_TICKS`
-- `CRITICAL_RECOVERY_LOCK_TICKS`
-- `IGNORE_CREATIVE_AND_SPECTATOR`
-- `tierForStreak(...)`
+* `STREAK_WINDOW_TICKS`
+* `RECOVERY_TICKS`
+* `MODERATE_RECOVERY_LOCK_TICKS`
+* `CRITICAL_RECOVERY_LOCK_TICKS`
+* `IGNORE_CREATIVE_AND_SPECTATOR`
+* `tierForStreak(...)`
+
+---
+
+## Compatibility
+
+| Component        | Status        |
+| ---------------- | ------------- |
+| Dedicated Server | Supported     |
+| Singleplayer     | Supported     |
+| Fabric API       | Required      |
+| NeoForge         | Not supported |
+| Forge            | Not supported |
+
+---
+
+## License
+
+MIT License
